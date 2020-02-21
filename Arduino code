@@ -2,7 +2,7 @@
 
 
 #include <SoftwareSerial.h>
-
+//Setting Up port, Wifi Id,Pass, server address etc.
 #define RX 2
 #define TX 3
 String AP = "invalid";       // AP NAME
@@ -27,7 +27,7 @@ float calcVoltage = 0;
 float dustDensity = 0;
 SoftwareSerial esp8266(RX, TX);
 
-
+#Begin the Wifi connectivity 
 void setup() {
   Serial.begin(9600);
   pinMode(ledPower, OUTPUT);
@@ -37,6 +37,7 @@ void setup() {
   sendCommand("AT+CWJAP=\"" + AP + "\",\"" + PASS + "\"", 20, "OK");
 }
 
+# Send the data into the server
 void loop() {
   valSensor = getSensorData();
   String getData = "GET /update?api_key=" + API + "&" + field + "=" + String(valSensor);
@@ -49,6 +50,7 @@ void loop() {
 }
 
 
+#get the sensor data
 
 float getSensorData() {
   
@@ -78,7 +80,7 @@ float getSensorData() {
 
 
 
-
+#check whatif the data was send successfully or not
 void sendCommand(String command, int maxTime, char readReplay[]) {
   Serial.print(countTrueCommand);
   Serial.print(". at command => ");
