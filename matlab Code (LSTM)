@@ -1,25 +1,37 @@
-
+% this '%' is for commenting purpose
+%initialize the channel and data field from where we fetch data
 readChannelID = 978621; 
 humidityFieldID =2; 
 readAPIKey = 'PAPHNZX0US2R18SH'; 
-
+%get the data with thingspeakRead function
 data = thingSpeakRead(readChannelID,'Fields',humidityFieldID,'NumMinutes',155555,'ReadKey',readAPIKey,'OutputFormat','matrix'); 
 data = data';
+
+%fill the missing value for preprocessing purpose
 data = fillmissing(data,'nearest')
+
+% Define training and test dataset
 ln = floor(0.99*numel(data));
 dataTrain = data(1:ln);
 dataTest = data(ln+1:end);
+
+%data standradization
+
 mu = mean(dataTrain);
 sig = std(dataTrain);
 dataTrainStandardized = (dataTrain - mu) / sig;
 
-%disp(dataTrainStandardized)
+
+%reshape the input data from  LSTM model
+
 XTrain = dataTrainStandardized(1:end-1);
 YTrain = dataTrainStandardized(2:end);
+
+%define the hidden node, feature for LSTM model
 numFeatures = 1;
 numResponses = 1;
 numHiddenUnits = 120;
-
+%Lstm model initilization
 layers = [ ...
     sequenceInputLayer(numFeatures)
     lstmLayer(numHiddenUnits)
@@ -48,8 +60,12 @@ for i = 2:numTimeStepsTest+1
     [net,YPred(:,i)] = predictAndUpdateState(net,YPred(:,i-1),'ExecutionEnvironment','cpu');
 end
 
+%Predition result
+
 YPred = sig*YPred + mu;
 disp(YPred)
+
+%write the data into another field
 
 writeAPIKey = 'WEO2LZHKNHV1ABR9'; 
 thingSpeakWrite(readChannelID,YPred,'WriteKey',writeAPIKey);
